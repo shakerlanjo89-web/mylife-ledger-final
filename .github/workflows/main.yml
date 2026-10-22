@@ -2,13 +2,10 @@
 name: Build MyLife Ledger APK
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
-  workflow_dispatch:
-
-permissions:
-  contents: read
 
 jobs:
   build:
@@ -27,24 +24,25 @@ jobs:
       - name: Install Android SDK
         uses: android-actions/setup-android@v4
 
-            - name: Extract Android project
+      - name: Extract Android project
         run: |
           mkdir -p extracted
-          unzip -o *.zip -d extracted
+          unzip -o ./*.zip -d extracted
           PROJECT_DIR=$(dirname "$(find extracted -name settings.gradle -type f | head -n 1)")
-          echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_ENV
           test -n "$PROJECT_DIR"
+          echo "PROJECT_DIR=$PROJECT_DIR" >> "$GITHUB_ENV"
 
       - name: Install Gradle
         run: |
           wget https://services.gradle.org/distributions/gradle-8.9-bin.zip
           unzip -q gradle-8.9-bin.zip
-          echo "$GITHUB_WORKSPACE/gradle-8.9/bin" >> $GITHUB_PATH
+          echo "$GITHUB_WORKSPACE/gradle-8.9/bin" >> "$GITHUB_PATH"
 
       - name: Build APK
         run: |
           cd "$PROJECT_DIR"
           gradle assembleDebug
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
